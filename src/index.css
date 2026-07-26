@@ -1,0 +1,89 @@
+:root {
+  --ouro: #d97706;
+  --ouro-claro: #fef3c7;
+  --ouro-escuro: #92400e;
+  --ouro-brilho: #f59e0b;
+  --verde-ev: #16a34a;
+  --verde-ev-claro: #dcfce7;
+  --vermelho: #dc2626;
+  --vermelho-claro: #fee2e2;
+  --azul: #2563eb;
+  --bg: #1a0f00;
+  --bg2: #261500;
+  --bg3: #332000;
+  --text: #fef3c7;
+  --text2: #d97706;
+  --text3: #f59e0b;
+  --borda: rgba(217,119,6,0.2);
+  --borda-forte: rgba(217,119,6,0.4);
+  --radius: 12px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
+input, textarea, select { font-family: var(--font); outline: none; }
+a { text-decoration: none; color: inherit; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--ouro-escuro); border-radius: 2px; }
+
+.btn-ouro {
+  background: var(--ouro);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-ouro:hover { background: var(--ouro-brilho); transform: translateY(-1px); }
+.btn-ouro:active { transform: translateY(0); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--borda-forte);
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  transition: all .15s;
+}
+.btn-outline:hover { border-color: var(--ouro); color: var(--text); }
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--borda);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+/* EV positivo = verde, negativo = vermelho */
+.ev-pos { color: var(--verde-ev); }
+.ev-neg { color: var(--vermelho); }
+.ev-badge-pos { background: var(--verde-ev-claro); color: #14532d; font-size: 11px; padding: 3px 8px; border-radius: 8px; font-weight: 600; }
+.ev-badge-neg { background: var(--vermelho-claro); color: #991b1b; font-size: 11px; padding: 3px 8px; border-radius: 8px; font-weight: 600; }
+.ev-badge-neu { background: var(--ouro-claro); color: var(--ouro-escuro); font-size: 11px; padding: 3px 8px; border-radius: 8px; font-weight: 600; }
+
+.badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 500; display: inline-block; }
+.badge-ouro { background: var(--ouro-claro); color: var(--ouro-escuro); }
+.badge-verde { background: var(--verde-ev-claro); color: #14532d; }
+.badge-vermelho { background: var(--vermelho-claro); color: #991b1b; }
+.badge-cinza { background: rgba(255,255,255,0.08); color: var(--text2); }
+
+/* Número grande estilo painel */
+.num-grande { font-size: 28px; font-weight: 700; font-family: 'monospace'; }
+.num-medio { font-size: 18px; font-weight: 600; font-family: monospace; }
