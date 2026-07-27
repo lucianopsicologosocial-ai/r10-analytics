@@ -17,13 +17,16 @@ export default function Assinatura({ session, irPara }) {
   const pagar = async () => {
     setLoad(true)
     try {
-      const res = await fetch('/api/criar-assinatura', {
+      const controller = new AbortController()
+      const tid = setTimeout(() => controller.abort(), 30000)
+      const res = await fetch('/api/criar-assinatura', { signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plano, userId: session.user.id, email: session.user.email, nome, cpf })
       })
       const data = await res.json()
-      if (data.paymentLink) window.open(data.paymentLink, '_blank')
+      clearTimeout(tid)
+      if (data.paymentLink) { window.open(data.paymentLink, '_blank') } else { alert('Erro: ' + (data.error || JSON.stringify(data))) }
     } catch (err) { alert('Erro: ' + err.message) }
     finally { setLoad(false) }
   }
