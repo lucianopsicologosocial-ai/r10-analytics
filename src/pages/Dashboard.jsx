@@ -29,18 +29,18 @@ export default function Dashboard({ session, irPara }) {
         const partidas = (data.response || []).map(converterPartida)
         setAoVivo(partidas.length)
         const evs = partidas.flatMap(p => {
-          const resultados = []
+          const res = []
           const ah = detectarValor(0.45, p.odds.home)
           const ad = detectarValor(0.28, p.odds.draw)
           const aa = detectarValor(0.27, p.odds.away)
-          if (ah.tem_valor) resultados.push({ ...p, melhor_aposta: 'home', analise: ah, time: p.home })
-          if (ad.tem_valor) resultados.push({ ...p, melhor_aposta: 'draw', analise: ad, time: 'Empate' })
-          if (aa.tem_valor) resultados.push({ ...p, melhor_aposta: 'away', analise: aa, time: p.away })
-          return resultados
+          if (ah.tem_valor) res.push({ ...p, melhor_aposta: 'home', analise: ah, time: p.home })
+          if (ad.tem_valor) res.push({ ...p, melhor_aposta: 'draw', analise: ad, time: 'Empate' })
+          if (aa.tem_valor) res.push({ ...p, melhor_aposta: 'away', analise: aa, time: p.away })
+          return res
         })
         setAlertasEV(evs)
       } catch(e) {
-        console.error('Dashboard buscar:', e)
+        console.error('Dashboard:', e)
       } finally {
         if (mounted) setCarregando(false)
       }
@@ -56,24 +56,25 @@ export default function Dashboard({ session, irPara }) {
     <div style={{ padding: '24px 16px 0' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <p style={{ fontSize: 13, color: 'var(--text2)' }}>{saudacao}, {nome} \u{1F44B}</p>
+          <p style={{ fontSize: 13, color: 'var(--text2)' }}>{saudacao}, {nome}</p>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', letterSpacing: -0.5, marginTop: 2 }}>R10 Analytics</h1>
         </div>
-        <button onClick={() => irPara('perfil')} style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--ouro)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, cursor: 'pointer' }}>\u{1F4CA}</button>
+        <button onClick={() => irPara('perfil')} style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--ouro)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, cursor: 'pointer' }}>P</button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
-        {[
-          { icon: '\u{1F525}', val: carregando ? '...' : alertasEV.length, label: 'EV+ hoje', cor: 'var(--ouro)' },
-          { icon: '\u{1F534}', val: carregando ? '...' : aoVivo, label: 'Ao vivo', cor: '#dc2626' },
-          { icon: '\u{1F4B0}', val: banca, label: 'Banca', cor: 'var(--verde-ev)' },
-        ].map(s => (
-          <div key={s.label} style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
-            <p style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: s.cor, marginBottom: 2, fontFamily: 'monospace' }}>{s.val}</p>
-            <p style={{ fontSize: 10, color: 'var(--text2)', lineHeight: 1.3 }}>{s.label}</p>
-          </div>
-        ))}
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--ouro)', fontFamily: 'monospace' }}>{carregando ? '...' : alertasEV.length}</p>
+          <p style={{ fontSize: 10, color: 'var(--text2)' }}>EV+ hoje</p>
+        </div>
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{carregando ? '...' : aoVivo}</p>
+          <p style={{ fontSize: 10, color: 'var(--text2)' }}>Ao vivo</p>
+        </div>
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--verde-ev)', fontFamily: 'monospace' }}>{banca}</p>
+          <p style={{ fontSize: 10, color: 'var(--text2)' }}>Banca</p>
+        </div>
       </div>
 
       {carregando && (
@@ -83,25 +84,25 @@ export default function Dashboard({ session, irPara }) {
       )}
 
       {!carregando && alertasEV.length > 0 && (
-        <>
+        <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.3 }}>OPORTUNIDADES EV+ HOJE</h2>
+            <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)' }}>OPORTUNIDADES EV+ HOJE</h2>
             <button onClick={() => irPara('alertas')} style={{ fontSize: 12, color: 'var(--ouro)', background: 'none', border: 'none', cursor: 'pointer' }}>Ver todos</button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {alertasEV.slice(0,5).map((p, i) => (
-              <button key={p.id + i} onClick={() => irPara('calculadora', { partida: p })} style={{
+              <button key={p.id + String(i)} onClick={() => irPara('calculadora', { partida: p })} style={{
                 background: 'var(--bg2)', border: '1px solid rgba(22,163,74,0.3)', borderRadius: 12,
                 padding: '14px 16px', textAlign: 'left', width: '100%', cursor: 'pointer'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{p.home} vs {p.away}</p>
-                    <p style={{ fontSize: 11, color: 'var(--text2)' }}>{p.liga} {p.elapsed ? '| ' + p.elapsed + '\'' : ''}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text2)' }}>{p.liga}{p.elapsed ? ' | ' + p.elapsed + "'" : ''}</p>
                   </div>
                   <span className="ev-badge-pos">{p.analise.classificacao}</span>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 8 }}>
                   <span className="badge badge-verde">{p.time}</span>
                   <span className="badge badge-cinza">Odd {p.melhor_aposta === 'home' ? p.odds.home : p.melhor_aposta === 'draw' ? p.odds.draw : p.odds.away}</span>
                   <span className="badge" style={{ background: 'rgba(22,163,74,0.15)', color: 'var(--verde-ev)' }}>EV {p.analise.ev}</span>
@@ -109,18 +110,17 @@ export default function Dashboard({ session, irPara }) {
               </button>
             ))}
           </div>
-        </>
+        </div>
       )}
 
       {!carregando && alertasEV.length === 0 && (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 12, padding: '20px 16px', textAlign: 'center', marginBottom: 24 }}>
-          <p style={{ fontSize: 20, marginBottom: 8 }}>\u26BD</p>
           <p style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, marginBottom: 4 }}>Nenhum EV+ ao vivo agora</p>
           <p style={{ fontSize: 12, color: 'var(--text2)' }}>Use a calculadora para analisar manualmente</p>
         </div>
       )}
 
-      <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.3, marginBottom: 12 }}>JOGADORES EM DESTAQUE</h2>
+      <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', marginBottom: 12 }}>JOGADORES EM DESTAQUE</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
         {JOGADORES_MOCK.slice(0, 3).map(j => {
           const prob = probGolJogador(j.stats)
@@ -130,8 +130,8 @@ export default function Dashboard({ session, irPara }) {
               padding: '14px 16px', textAlign: 'left', width: '100%', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 14
             }}>
-              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--bg3)', border: '2px solid var(--borda-forte)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>\u26BD</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>J</div>
+              <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{j.nome}</p>
                 <p style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 4 }}>{j.time} | {j.posicao}</p>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -139,25 +139,24 @@ export default function Dashboard({ session, irPara }) {
                   <span className="badge" style={{ background: 'rgba(22,163,74,0.15)', color: 'var(--verde-ev)' }}>P(gol) {(prob*100).toFixed(0)}%</span>
                 </div>
               </div>
-              <span style={{ color: 'var(--text2)', fontSize: 16 }}>></span>
+              <span style={{ color: 'var(--text2)', fontSize: 16 }}>&gt;</span>
             </button>
           )
         })}
       </div>
 
-      <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.3, marginBottom: 12 }}>MODULOS</h2>
+      <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', marginBottom: 12 }}>MODULOS</h2>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
         {[
-          { icon: '\u{1F9EE}', titulo: 'Calculadora EV', sub: 'Kelly + Valor esperado', pagina: 'calculadora' },
-          { icon: '\u{1F534}', titulo: 'Ao vivo', sub: 'Partidas em tempo real', pagina: 'ao-vivo' },
-          { icon: '\u{1F514}', titulo: 'Alertas', sub: 'Notificacoes EV+', pagina: 'alertas' },
-          { icon: '\u{1F4B0}', titulo: 'Banca', sub: 'Gestao e recuperacao', pagina: 'banca' },
+          { titulo: 'Calculadora EV', sub: 'Kelly + Valor esperado', pagina: 'calculadora' },
+          { titulo: 'Ao vivo', sub: 'Partidas em tempo real', pagina: 'ao-vivo' },
+          { titulo: 'Alertas', sub: 'Notificacoes EV+', pagina: 'alertas' },
+          { titulo: 'Banca', sub: 'Gestao e recuperacao', pagina: 'banca' },
         ].map(m => (
           <button key={m.pagina} onClick={() => irPara(m.pagina)} style={{
             background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 12,
             padding: '16px 14px', textAlign: 'left', cursor: 'pointer'
           }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>{m.icon}</div>
             <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{m.titulo}</p>
             <p style={{ fontSize: 11, color: 'var(--text2)' }}>{m.sub}</p>
           </button>
