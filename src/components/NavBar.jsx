@@ -5,7 +5,7 @@ const NAV = [
   { id: 'ao-vivo',     icon: '🔴', label: 'Ao vivo' },
   { id: 'calculadora', icon: '🧮', label: 'Calcular' },
   { id: 'alertas',     icon: '🔔', label: 'Alertas' },
-  { id: 'banca',       icon: '💰', label: 'Banca' },
+  { id: 'assinatura',  icon: '💳', label: 'Planos' },
 ]
 
 export default function NavBar({ pagina, irPara }) {
