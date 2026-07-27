@@ -2,37 +2,26 @@ import React, { useState, useEffect, useRef } from 'react'
 import { PARTIDAS_MOCK } from '../lib/apiEsportes'
 import { detectarValor } from '../lib/modelos'
 
-const API_HOST = 'https://v3.football.api-sports.io'
-const API_KEY = import.meta.env.VITE_API_FOOTBALL_KEY
-
-const apiFetch = async (endpoint, params = {}) => {
-  const url = new URL(API_HOST + endpoint)
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-  const res = await fetch(url.toString(), {
-    headers: { 'x-apisports-key': API_KEY }
-  })
+// Chama o proxy Vercel que mantém a API key segura no servidor
+const buscarPartidasAoVivo = async () => {
+  const res = await fetch('/api/esportes/ao-vivo')
   return res.json()
 }
 
-// Converte dados da API-Football para o formato interno
-const converterPartida = (f) => {
-  const home_prob = f.goals?.home !== null ? null : null
-  return {
-    id: String(f.fixture.id),
-    home: f.teams.home.name,
-    away: f.teams.away.name,
-    placar: [f.goals.home ?? 0, f.goals.away ?? 0],
-    min: f.fixture.status.elapsed ?? 0,
-    liga: f.league.name,
-    status: 'ao-vivo',
-    // Sem odds ao vivo no plano gratuito — estimativas via Poisson simples
-    odds_live: { home: 2.00, draw: 3.30, away: 3.50 },
-    prob_est: { home: 0.45, draw: 0.28, away: 0.27 },
-    logoHome: f.teams.home.logo,
-    logoAway: f.teams.away.logo,
-    logoLiga: f.league.logo,
-  }
-}
+const converterPartida = (f) => ({
+  id: String(f.fixture.id),
+  home: f.teams.home.name,
+  away: f.teams.away.name,
+  placar: [f.goals.home ?? 0, f.goals.away ?? 0],
+  min: f.fixture.status.elapsed ?? 0,
+  liga: f.league.name,
+  status: 'ao-vivo',
+  odds_live: { home: 2.00, draw: 3.30, away: 3.50 },
+  prob_est: { home: 0.45, draw: 0.28, away: 0.27 },
+  logoHome: f.teams.home.logo,
+  logoAway: f.teams.away.logo,
+  logoLiga: f.league.logo,
+})
 
 export default function PainelAoVivo({ session, irPara }) {
   const [partidas, setPartidas] = useState([])
@@ -42,9 +31,9 @@ export default function PainelAoVivo({ session, irPara }) {
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null)
   const timer = useRef(null)
 
-  const buscarAoVivo = async () => {
+  const atualizar = async () => {
     try {
-      const data = await apiFetch('/fixtures', { live: 'all' })
+      const data = await buscarPartidasAoVivo()
       if (data.errors && Object.keys(data.errors).length > 0) {
         setErro('Erro na API: ' + JSON.stringify(data.errors))
         return
@@ -61,10 +50,10 @@ export default function PainelAoVivo({ session, irPara }) {
   }
 
   useEffect(() => {
-    buscarAoVivo()
+    atualizar()
     const isPremium = session?.user?.user_metadata?.plano === 'premium'
     const intervalo = isPremium ? 30000 : 120000
-    timer.current = setInterval(buscarAoVivo, intervalo)
+    timer.current = setInterval(atualizar, intervalo)
     return () => clearInterval(timer.current)
   }, [])
 
@@ -90,12 +79,12 @@ export default function PainelAoVivo({ session, irPara }) {
           <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>Ao Vivo</h1>
           <p style={{ fontSize: 12, color: 'var(--text2)' }}>
             {carregando ? 'Buscando partidas...' : `${partidas.length} partida${partidas.length !== 1 ? 's' : ''} ao vivo`}
-            {ultimaAtualizacao && ` • Atualizado ${ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
+            {ultimaAtualizacao && ` • ${ultimaAtualizacao.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: carregando ? '#f59e0b' : '#dc2626', boxShadow: `0 0 6px ${carregando ? '#f59e0b' : '#dc2626'}` }} />
-          <button onClick={buscarAoVivo} style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 6, padding: '4px 8px', color: 'var(--text2)', fontSize: 11, cursor: 'pointer' }}>↻</button>
+          <button onClick={atualizar} style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 6, padding: '4px 8px', color: 'var(--text2)', fontSize: 11, cursor: 'pointer' }}>↻</button>
         </div>
       </div>
 
@@ -120,7 +109,6 @@ export default function PainelAoVivo({ session, irPara }) {
         </div>
       )}
 
-      {/* Alertas EV ao vivo */}
       {alertaEV.length > 0 && (
         <div style={{ background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.3)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
           <p style={{ fontSize: 11, color: 'var(--verde-ev)', fontWeight: 600, letterSpacing: 1, marginBottom: 8 }}>🔥 EV+ DETECTADO AO VIVO</p>
@@ -140,7 +128,6 @@ export default function PainelAoVivo({ session, irPara }) {
         </div>
       )}
 
-      {/* Partidas ao vivo reais */}
       {partidas.length > 0 && (
         <>
           <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.3, marginBottom: 12 }}>PARTIDAS AO VIVO</h2>
@@ -169,8 +156,8 @@ export default function PainelAoVivo({ session, irPara }) {
                       <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--ouro-brilho)', fontFamily: 'monospace' }}>{p.placar[1]}</span>
                     </div>
                     <div style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {p.logoAway && <img src={p.logoAway} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />}
                       <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{p.away}</p>
+                      {p.logoAway && <img src={p.logoAway} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />}
                     </div>
                   </div>
                 </div>
@@ -200,16 +187,13 @@ export default function PainelAoVivo({ session, irPara }) {
         </>
       )}
 
-      {/* Próximas partidas (mock) */}
       <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.3, marginBottom: 12 }}>PRÓXIMAS PARTIDAS</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {PARTIDAS_MOCK.map(p => (
           <div key={p.id} style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{p.home} vs {p.away}</p>
-                <p style={{ fontSize: 11, color: 'var(--text2)' }}>{p.liga} • {new Date(p.data).toLocaleDateString('pt-BR')}</p>
-              </div>
+            <div style={{ marginBottom: 8 }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{p.home} vs {p.away}</p>
+              <p style={{ fontSize: 11, color: 'var(--text2)' }}>{p.liga} • {new Date(p.data).toLocaleDateString('pt-BR')}</p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {[
