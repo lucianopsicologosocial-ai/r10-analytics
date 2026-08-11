@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   try {
     // Buscar partidas ao vivo (status=LIVE ou IN_PLAY ou PAUSED)
-    const r = await fetch(`${BASE}/matches?status=IN_PLAY,PAUSED,HALFTIME`, {
+    const r = await fetch(`${BASE}/matches?status=IN_PLAY,PAUSED,LIVE`, {
       headers: { 'X-Auth-Token': API_KEY }
     })
 
