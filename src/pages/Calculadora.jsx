@@ -5,6 +5,8 @@ export default function Calculadora({ session, irPara, dados }) {
   const [prob, setProb] = useState(dados?.prob ? (dados.prob * 100).toFixed(1) : '')
   const [odds, setOdds] = useState(dados?.odds || '')
   const [odds2, setOdds2] = useState('')
+  const [vigOdds1, setVigOdds1] = useState('')
+  const [vigOdds2, setVigOdds2] = useState('')
   const [banca, setBanca] = useState(dados?.banca || '100')
   const [resultado, setResultado] = useState(null)
   const [aba, setAba] = useState('ev') // ev | kelly | vig | ruina
@@ -83,12 +85,12 @@ export default function Calculadora({ session, irPara, dados }) {
       {resultado && aba === 'ev' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{
-            background: resultado.valor.tem_valor ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
-            border: `2px solid ${resultado.valor.tem_valor ? 'rgba(22,163,74,0.4)' : 'rgba(220,38,38,0.3)'}`,
+            background: resultado.ev.positivo ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+            border: `2px solid ${resultado.ev.positivo ? 'rgba(22,163,74,0.4)' : 'rgba(220,38,38,0.3)'}`,
             borderRadius: 14, padding: '18px', textAlign: 'center'
           }}>
-            <p style={{ fontSize: 28, marginBottom: 8 }}>{resultado.valor.tem_valor ? '✅' : '❌'}</p>
-            <p className="num-grande" style={{ color: resultado.valor.tem_valor ? 'var(--verde-ev)' : 'var(--vermelho)', marginBottom: 4 }}>
+            <p style={{ fontSize: 28, marginBottom: 8 }}>{resultado.ev.positivo ? '✅' : '❌'}</p>
+            <p className="num-grande" style={{ color: resultado.ev.positivo ? 'var(--verde-ev)' : 'var(--vermelho)', marginBottom: 4 }}>
               {resultado.valor.classificacao}
             </p>
             <p style={{ fontSize: 14, color: 'var(--text2)' }}>EV de R${resultado.ev.ev} por R$100 apostados</p>
@@ -138,12 +140,12 @@ export default function Calculadora({ session, irPara, dados }) {
           <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.5, marginBottom: 4 }}>
             Insira as duas odds de um mercado (ex: casa e visitante) para calcular a margem da casa (vig).
           </p>
-          <input type="number" value={odds} onChange={e => setOdds(e.target.value)} placeholder="Odd 1 (ex: 2.10)"
+          <input type="number" value={vigOdds1} onChange={e => setVigOdds1(e.target.value)} placeholder="Odd 1 (ex: 2.10)"
             style={{ padding: '12px 16px', background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 10, color: 'var(--text)', fontSize: 16, fontFamily: 'monospace' }} />
-          <input type="number" value={odds2} onChange={e => setOdds2(e.target.value)} placeholder="Odd 2 (ex: 1.75)"
+          <input type="number" value={vigOdds2} onChange={e => setVigOdds2(e.target.value)} placeholder="Odd 2 (ex: 1.75)"
             style={{ padding: '12px 16px', background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 10, color: 'var(--text)', fontSize: 16, fontFamily: 'monospace' }} />
-          {odds && odds2 && (() => {
-            const o1 = parseFloat(odds), o2 = parseFloat(odds2)
+          {vigOdds1 && vigOdds2 && (() => {
+            const o1 = parseFloat(vigOdds1), o2 = parseFloat(vigOdds2)
             if (o1 > 1 && o2 > 1) {
               const vig = removerVig(o1, o2)
               return (

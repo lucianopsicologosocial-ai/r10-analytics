@@ -8,20 +8,48 @@ const buscarPartidasAoVivo = async () => {
   return res.json()
 }
 
-const converterPartida = (f) => ({
-  id: String(f.fixture.id),
-  home: f.teams.home.name,
-  away: f.teams.away.name,
-  placar: [f.goals.home ?? 0, f.goals.away ?? 0],
-  min: f.fixture.status.elapsed ?? 0,
-  liga: f.league.name,
-  status: 'ao-vivo',
-  odds_live: { home: 2.00, draw: 3.30, away: 3.50 },
-  prob_est: { home: 0.45, draw: 0.28, away: 0.27 },
-  logoHome: f.teams.home.logo,
-  logoAway: f.teams.away.logo,
-  logoLiga: f.league.logo,
-})
+// Estimativa de probabilidade baseada no placar ao vivo (modelo simplificado)
+const estimarProbPorPlacar = (golsCasa, golsFora, minuto) => {
+  const minRestante = Math.max(90 - (minuto || 45), 1)
+  const fatorTempo = minRestante / 90
+  // Força baseada no placar atual
+  const diffGols = golsCasa - golsFora
+  const probBase = diffGols > 1 ? { home: 0.78, draw: 0.12, away: 0.10 }
+    : diffGols === 1 ? { home: 0.62, draw: 0.22, away: 0.16 }
+    : diffGols === 0 ? { home: 0.38, draw: 0.30, away: 0.32 }
+    : diffGols === -1 ? { home: 0.16, draw: 0.22, away: 0.62 }
+    : { home: 0.10, draw: 0.12, away: 0.78 }
+  // Quanto mais tarde no jogo, menos incerteza (reforçar o placar atual)
+  const peso = 1 - fatorTempo * 0.4
+  return {
+    home: Math.min(0.95, probBase.home * (1 + peso * diffGols * 0.05)),
+    draw: probBase.draw * (1 - peso * Math.abs(diffGols) * 0.1),
+    away: Math.min(0.95, probBase.away * (1 - peso * diffGols * 0.05)),
+  }
+}
+
+const converterPartida = (f) => {
+  const golsCasa = f.goals?.home ?? 0
+  const golsFora = f.goals?.away ?? 0
+  const minuto = f.fixture?.status?.elapsed ?? 45
+  // Odds da API se disponíveis, senão estimativa pelo placar
+  const odds_live = f.odds_live || { home: 2.00, draw: 3.30, away: 3.50 }
+  const prob_est = estimarProbPorPlacar(golsCasa, golsFora, minuto)
+  return {
+    id: String(f.fixture.id),
+    home: f.teams.home.name,
+    away: f.teams.away.name,
+    placar: [golsCasa, golsFora],
+    min: minuto,
+    liga: f.league.name,
+    status: 'ao-vivo',
+    odds_live,
+    prob_est,
+    logoHome: f.teams.home.logo,
+    logoAway: f.teams.away.logo,
+    logoLiga: f.league.logo,
+  }
+}
 
 export default function PainelAoVivo({ session, irPara }) {
   const [partidas, setPartidas] = useState([])
@@ -34,8 +62,21 @@ export default function PainelAoVivo({ session, irPara }) {
   const atualizar = async () => {
     try {
       const data = await buscarPartidasAoVivo()
+      // Verificar erro de conta suspensa
       if (data.errors && Object.keys(data.errors).length > 0) {
-        setErro('Erro na API: ' + JSON.stringify(data.errors))
+        const errStr = JSON.stringify(data.errors)
+        if (errStr.includes('suspended')) {
+          setErro('API suspensa — use a calculadora manual para análise ao vivo')
+        } else if (errStr.includes('quota') || errStr.includes('limit')) {
+          setErro('Limite diário de requisições atingido. Renova às 21h (horário de Brasília)')
+        } else {
+          setErro('Erro na API: ' + errStr)
+        }
+        return
+      }
+      // Verificar acesso negado no campo access
+      if (data.access && data.access.includes('suspended')) {
+        setErro('API suspensa — use a calculadora manual para análise ao vivo')
         return
       }
       const convertidas = (data.response || []).map(converterPartida)
@@ -89,8 +130,13 @@ export default function PainelAoVivo({ session, irPara }) {
       </div>
 
       {erro && (
-        <div style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.3)', borderRadius: 12, padding: 14, marginBottom: 16 }}>
-          <p style={{ fontSize: 12, color: '#fca5a5' }}>⚠️ {erro}</p>
+        <div style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12, padding: 14, marginBottom: 16 }}>
+          <p style={{ fontSize: 12, color: '#fbbf24', marginBottom: erro.includes('suspensa') ? 8 : 0 }}>⚠️ {erro}</p>
+          {erro.includes('suspensa') && (
+            <button onClick={() => irPara('calculadora')} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8, background: 'var(--ouro)', border: 'none', color: '#000', cursor: 'pointer', fontWeight: 600 }}>
+              Abrir Calculadora →
+            </button>
+          )}
         </div>
       )}
 
@@ -119,7 +165,7 @@ export default function PainelAoVivo({ session, irPara }) {
                 <p style={{ fontSize: 11, color: 'var(--text2)' }}>{a.mercado}: {a.time}</p>
               </div>
               <span className="ev-badge-pos">{a.analise.ev} EV</span>
-              <button onClick={() => irPara('calculadora', { prob: parseFloat(a.analise.prob_real)/100, odds: 0 })}
+              <button onClick={() => irPara('calculadora', { prob: parseFloat(a.analise.prob_real), odds: 0 })}
                 style={{ background: 'var(--verde-ev)', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11, color: '#fff', cursor: 'pointer' }}>
                 Calcular
               </button>

@@ -231,8 +231,8 @@ export const detectarValor = (prob_real, odds_casa) => {
     prob_real: (prob_real * 100).toFixed(1) + '%',
     prob_implicita: (prob_implicita * 100).toFixed(1) + '%',
     vantagem: (vantagem * 100).toFixed(1) + '%',
-    tem_valor: vantagem > 0.03, // margem mínima de 3% para considerar EV+
+    tem_valor: vantagem > 0.01, // margem mínima de 1% para considerar EV+
     ev: ev.evPercent + '%',
-    classificacao: vantagem > 0.1 ? '🔥 Forte EV+' : vantagem > 0.03 ? '✅ EV+' : vantagem > -0.03 ? '⚪ Neutro' : '❌ EV-'
+    classificacao: vantagem > 0.08 ? '🔥 Forte EV+' : vantagem > 0.03 ? '✅ EV+' : vantagem > 0.01 ? '⚡ EV+ Leve' : vantagem > -0.02 ? '⚪ Neutro' : '❌ EV-'
   }
 }
