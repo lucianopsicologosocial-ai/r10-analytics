@@ -16,6 +16,14 @@ const buscarProximasReais = async () => {
   } catch { return [] }
 }
 
+const buscarOddsPartida = async (home, away) => {
+  try {
+    const res = await fetch(`/api/esportes/odds?casa=${encodeURIComponent(home)}&fora=${encodeURIComponent(away)}`)
+    const data = await res.json()
+    return data
+  } catch { return null }
+}
+
 // Estimativa de probabilidade baseada no placar ao vivo (modelo simplificado)
 const estimarProbPorPlacar = (golsCasa, golsFora, minuto) => {
   const minRestante = Math.max(90 - (minuto || 45), 1)
@@ -259,7 +267,7 @@ export default function PainelAoVivo({ session, irPara }) {
               ].map(m => (
                 <div key={m.label} style={{ flex: 1, background: 'var(--bg3)', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
                   <p style={{ fontSize: 10, color: 'var(--text2)', marginBottom: 3 }}>{m.label}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: m.odds ? 'var(--text)' : 'var(--text2)', fontFamily: 'monospace' }}>{m.odds || '—'}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: m.odds ? 'var(--text)' : 'var(--text2)', fontFamily: 'monospace' }}>{m.odds ? m.odds.toFixed(2) : '—'}</p>
                 </div>
               ))}
             </div>
