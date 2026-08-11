@@ -1,15 +1,11 @@
-const API_KEY = process.env.API_FOOTBALL_KEY
-const BASE = 'https://v3.football.api-sports.io'
-
+// Odds não disponíveis no plano free do football-data.org
+// Retorna estrutura vazia com mensagem clara
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  if (!API_KEY) return res.status(500).json({ errors: { token: 'API_FOOTBALL_KEY nao configurada' } })
-  const { partida } = req.query
-  if (!partida) return res.status(400).json({ errors: { param: 'partida obrigatorio' } })
-  try {
-    const r = await fetch(`${BASE}/odds?fixture=${partida}&bookmaker=8`, {
-      headers: { 'x-apisports-key': API_KEY, 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' }
-    })
-    return res.status(200).json(await r.json())
-  } catch(e) { return res.status(500).json({ errors: { server: e.message } }) }
+  return res.status(200).json({
+    response: [],
+    results: 0,
+    errors: {},
+    message: 'Odds em tempo real requerem plano pago. Use a calculadora manual.'
+  })
 }

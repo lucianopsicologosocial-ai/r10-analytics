@@ -1,15 +1,28 @@
-const API_KEY = process.env.API_FOOTBALL_KEY
-const BASE = 'https://v3.football.api-sports.io'
+// football-data.org não tem API de jogadores no plano free
+// Usando TheSportsDB (gratuito e sem limite)
+const TSDB_BASE = 'https://www.thesportsdb.com/api/v1/json/3'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  if (!API_KEY) return res.status(500).json({ errors: { token: 'API_FOOTBALL_KEY nao configurada' } })
   const { nome } = req.query
   if (!nome) return res.status(400).json({ errors: { param: 'nome obrigatorio' } })
+
   try {
-    const r = await fetch(`${BASE}/players?search=${encodeURIComponent(nome)}&season=2024`, {
-      headers: { 'x-apisports-key': API_KEY, 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' }
-    })
-    return res.status(200).json(await r.json())
-  } catch(e) { return res.status(500).json({ errors: { server: e.message } }) }
+    const r = await fetch(`${TSDB_BASE}/searchplayers.php?p=${encodeURIComponent(nome)}`)
+    const data = await r.json()
+    const players = (data.player || []).map(p => ({
+      player: {
+        id: p.idPlayer,
+        name: p.strPlayer,
+        photo: p.strThumb || p.strCutout
+      },
+      statistics: [{
+        team: { name: p.strTeam },
+        games: { position: p.strPosition }
+      }]
+    }))
+    return res.status(200).json({ response: players, results: players.length, errors: {} })
+  } catch(e) {
+    return res.status(500).json({ errors: { server: e.message } })
+  }
 }

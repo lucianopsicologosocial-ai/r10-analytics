@@ -1,15 +1,16 @@
-const API_KEY = process.env.API_FOOTBALL_KEY
-const BASE = 'https://v3.football.api-sports.io'
+// TheSportsDB para stats de jogador (gratuito)
+const TSDB_BASE = 'https://www.thesportsdb.com/api/v1/json/3'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  if (!API_KEY) return res.status(500).json({ errors: { token: 'API_FOOTBALL_KEY nao configurada' } })
-  const { id, temporada = '2024' } = req.query
+  const { id } = req.query
   if (!id) return res.status(400).json({ errors: { param: 'id obrigatorio' } })
+
   try {
-    const r = await fetch(`${BASE}/players?id=${id}&season=${temporada}`, {
-      headers: { 'x-apisports-key': API_KEY, 'x-rapidapi-key': API_KEY, 'x-rapidapi-host': 'v3.football.api-sports.io' }
-    })
-    return res.status(200).json(await r.json())
-  } catch(e) { return res.status(500).json({ errors: { server: e.message } }) }
+    const r = await fetch(`${TSDB_BASE}/lookupplayer.php?id=${id}`)
+    const data = await r.json()
+    return res.status(200).json({ response: data.players || [], results: (data.players||[]).length, errors: {} })
+  } catch(e) {
+    return res.status(500).json({ errors: { server: e.message } })
+  }
 }

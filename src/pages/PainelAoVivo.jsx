@@ -8,6 +8,14 @@ const buscarPartidasAoVivo = async () => {
   return res.json()
 }
 
+const buscarProximasReais = async () => {
+  try {
+    const res = await fetch('/api/esportes/proximas')
+    const data = await res.json()
+    return data.response || []
+  } catch { return [] }
+}
+
 // Estimativa de probabilidade baseada no placar ao vivo (modelo simplificado)
 const estimarProbPorPlacar = (golsCasa, golsFora, minuto) => {
   const minRestante = Math.max(90 - (minuto || 45), 1)
@@ -53,6 +61,7 @@ const converterPartida = (f) => {
 
 export default function PainelAoVivo({ session, irPara }) {
   const [partidas, setPartidas] = useState([])
+  const [proximasReais, setProximasReais] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
   const [alertaEV, setAlertaEV] = useState([])
@@ -92,6 +101,7 @@ export default function PainelAoVivo({ session, irPara }) {
 
   useEffect(() => {
     atualizar()
+    buscarProximasReais().then(p => { if (p.length > 0) setProximasReais(p) })
     const isPremium = session?.user?.user_metadata?.plano === 'premium'
     const intervalo = isPremium ? 30000 : 120000
     timer.current = setInterval(atualizar, intervalo)
@@ -235,7 +245,7 @@ export default function PainelAoVivo({ session, irPara }) {
 
       <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text2)', letterSpacing: 0.3, marginBottom: 12 }}>PRÓXIMAS PARTIDAS</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {PARTIDAS_MOCK.map(p => (
+        {(proximasReais.length > 0 ? proximasReais : PARTIDAS_MOCK).map(p => (
           <div key={p.id} style={{ background: 'var(--bg2)', border: '1px solid var(--borda)', borderRadius: 12, padding: '14px 16px' }}>
             <div style={{ marginBottom: 8 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{p.home} vs {p.away}</p>
