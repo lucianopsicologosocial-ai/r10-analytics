@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       data: m.utcDate,
       liga: m.competition?.name || '',
       status: 'agendada',
-      odds: { home: 0, draw: 0, away: 0 } // odds não disponíveis no free
+      odds: null // odds não disponíveis no plano free
     }))
 
     return res.status(200).json({ response, results: response.length, errors: {} })

@@ -259,7 +259,7 @@ export default function PainelAoVivo({ session, irPara }) {
               ].map(m => (
                 <div key={m.label} style={{ flex: 1, background: 'var(--bg3)', borderRadius: 8, padding: '8px', textAlign: 'center' }}>
                   <p style={{ fontSize: 10, color: 'var(--text2)', marginBottom: 3 }}>{m.label}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'monospace' }}>{m.odds}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: m.odds ? 'var(--text)' : 'var(--text2)', fontFamily: 'monospace' }}>{m.odds || '—'}</p>
                 </div>
               ))}
             </div>
