@@ -180,8 +180,10 @@ Responda APENAS em JSON válido, sem markdown, neste formato exato:
     const claudeData = await claudeRes.json()
     const texto = claudeData.content?.[0]?.text || '{}'
     let analise
-    try { analise = JSON.parse(texto) }
-    catch { analise = { erro: 'Falha ao parsear resposta da IA', raw: texto.slice(0, 200) } }
+    try {
+      const limpo = texto.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim()
+      analise = JSON.parse(limpo)
+    } catch { analise = { erro: 'Falha ao parsear resposta da IA', raw: texto.slice(0, 200) } }
 
     return res.status(200).json({
       jogo: { home, away, minuto: min, placar: [gC, gF], liga },
