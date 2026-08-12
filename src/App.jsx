@@ -10,6 +10,7 @@ import Banca from './pages/Banca'
 import Assinatura from './pages/Assinatura'
 import Perfil from './pages/Perfil'
 import NavBar from './components/NavBar'
+import AnaliseAoVivo from './pages/AnaliseAoVivo'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -42,6 +43,7 @@ export default function App() {
       case 'jogador':     return <PerfilJogador session={session} irPara={irPara} jogador={extra} />
       case 'calculadora': return <Calculadora session={session} irPara={irPara} dados={extra} />
       case 'ao-vivo':     return <PainelAoVivo session={session} irPara={irPara} />
+      case 'analise-ao-vivo': return <AnaliseAoVivo session={session} irPara={irPara} dadosJogo={extra} />
       case 'alertas':     return <Alertas session={session} irPara={irPara} />
       case 'banca':       return <Banca session={session} irPara={irPara} />
       case 'assinatura':  return <Assinatura session={session} irPara={irPara} />

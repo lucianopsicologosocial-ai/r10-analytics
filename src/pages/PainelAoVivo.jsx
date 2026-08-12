@@ -226,7 +226,18 @@ export default function PainelAoVivo({ session, irPara }) {
                   </div>
                 </div>
                 <div style={{ padding: '0 14px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                  {[
+                  <button onClick={() => irPara('analise-ao-vivo', {
+                    home: p.home, away: p.away, minuto: p.min,
+                    placar: p.placar, liga: p.liga, id: p.id
+                  })} style={{
+                    width: '100%', padding: '8px', marginBottom: 10,
+                    background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)',
+                    borderRadius: 8, color: 'var(--ouro)', fontSize: 12, fontWeight: 600,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+                  }}>
+                  ⚡ Analisar com IA — {p.min}' {p.placar[0]}×{p.placar[1]}
+                </button>
+                {[
                     { label: p.home, odds: p.odds_live.home, prob: p.prob_est.home },
                     { label: 'Empate', odds: p.odds_live.draw, prob: p.prob_est.draw },
                     { label: p.away, odds: p.odds_live.away, prob: p.prob_est.away },
