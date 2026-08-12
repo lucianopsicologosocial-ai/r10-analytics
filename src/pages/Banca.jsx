@@ -87,7 +87,7 @@ export default function Banca({ session, irPara }) {
     const novaBanca = bancaAtual + (form.resultado === 'ganhou' ? lucro : -valor)
     const aposta = {
       user_id: session.user.id, jogo: form.jogo, mercado: form.mercado,
-      odd, valor, resultado: form.resultado, lucro, data: form.data, nota: form.nota,
+      odd, valor, resultado: form.resultado, lucro, data_aposta: form.data, nota: form.nota,
       casa_aposta: form.casa_aposta,
       ev_percent: form.ev_percent ? parseFloat(form.ev_percent) : null,
       foi_ev_plus: form.foi_ev_plus
@@ -238,7 +238,7 @@ export default function Banca({ session, irPara }) {
                     <p style={{ fontSize:13, fontWeight:600, color:'var(--text)' }}>{a.jogo}</p>
                     {a.foi_ev_plus && <span style={{ fontSize:10, padding:'1px 6px', borderRadius:10, background:'rgba(234,179,8,0.15)', color:'var(--ouro)' }}>EV+</span>}
                   </div>
-                  <p style={{ fontSize:11, color:'var(--text2)' }}>{a.mercado} · Odd {parseFloat(a.odd).toFixed(2)} · {a.casa_aposta || ''} · {a.data}</p>
+                  <p style={{ fontSize:11, color:'var(--text2)' }}>{a.mercado} · Odd {parseFloat(a.odd).toFixed(2)} · {a.casa_aposta || ''} · {a.data_aposta}</p>
                   {a.ev_percent && <p style={{ fontSize:11, color:'var(--ouro)', marginTop:2 }}>EV: {a.ev_percent>0?'+':''}{a.ev_percent}%</p>}
                   {a.nota && <p style={{ fontSize:11, color:'var(--text2)', marginTop:2, fontStyle:'italic' }}>{a.nota}</p>}
                 </div>
